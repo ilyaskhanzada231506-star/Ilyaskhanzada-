@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-theme-mode="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dev.log — Marcus Vale's programming notebook</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0d10;
+  --bg-elev: #131418;
+  --fg: #ece9e0;
+  --fg-dim: #a8a59c;
+  --muted: #6c6a63;
+  --border: #232428;
+  --card: #15161a;
+  --accent: #ff6b35;
+  --accent-soft: #ff8c5e;
+  --accent2: #5eead4;
+  --code-bg: #0a0b0d;
+  --shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+  --shadow-raise: 0 20px 50px -15px rgba(255,107,53,0.18), 0 30px 60px -20px rgba(0,0,0,0.6);
+}
+[data-theme="light"] {
+  --bg: #f4efe6;
+  --bg-elev: #ebe5d8;
+  --fg: #1a1815;
+  --fg-dim: #4a4742;
+  --muted: #8a8580;
+  --border: #d8d1c0;
+  --card: #fdfaf2;
+  --accent: #c44a17;
+  --accent-soft: #d65a26;
+  --accent2: #1d8870;
+  --code-bg: #1a1815;
+  --shadow: 0 10px 30px -10px rgba(50,30,10,0.15);
+  --shadow-raise: 0 25px 50px -15px rgba(196,74,23,0.22), 0 20px 40px -20px rgba(50,30,10,0.2);
+}
+
+* {
+  transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, fill 0.5s ease, stroke 0.5s ease, box-shadow 0.5s ease;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  overflow-x: hidden;
+}
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+::selection { background: var(--accent); color: var(--bg); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Background grid */
+.bg-grid {
+  background-image: 
+    linear-gradient(rgba(255,107,53,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,107,53,0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 90%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 90%);
+}
+[data-theme="light"] .bg-grid {
+  background-image: 
+    linear-gradient(rgba(196,74,23,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196,74,23,0.08) 1px, transparent 1px);
+}
+
+/* Reading progress bar */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  z-index: 100;
+  width: 0%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 12px var(--accent), 0 0 4px var(--accent);
+}
+
+/* Glow blobs */
+.glow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: drift 22s ease-in-out infinite;
+}
+[data-theme="light"] .glow-blob { opacity: 0.22; }
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.1); }
+  66% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+/* Cursor + pulse */
+.cursor {
+  display: inline-block;
+  width: 4px;
+  height: 0.85em;
+  background: var(--accent);
+  margin-left: 6px;
+  vertical-align: text-bottom;
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.cursor-blink { animation: blink 1s steps(2) infinite; color: var(--accent); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+  50% { opacity: 0.5; box-shadow: 0 0 14px currentColor; }
+}
+.pulse-dot { animation: pulse 2.2s ease-in-out infinite; }
+
+/* Article cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.45s ease,
+              border-color 0.5s ease,
+              background-color 0.5s ease,
+              color 0.5s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 0%), rgba(255,107,53,0.09), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-raise);
+  border-color: rgba(255,107,53,0.45);
+}
+.card:hover::before { opacity: 1; }
+.card:hover .card-arrow {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+.card-arrow {
+  transition: transform 0.3s, color 0.3s;
+  display: inline-block;
+}
+
+/* Code blocks */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.5s ease, transform 0.4s ease;
+}
+.code-block:hover { border-color: rgba(255,107,53,0.3); }
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.025);
+  border-bottom: 1px solid var(--border);
+}
+.code-block pre {
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 13px;
+  line-height: 1.65;
+  background: transparent !important;
+}
+.code-block code {
+  font-family: 'JetBrains Mono', monospace !important;
+  background: transparent !important;
+  text-shadow: none !important;
+  white-space: pre;
+}
+
+/* Prism token overrides */
+.token.keyword, .token.keyword.function, .token.keyword-operator { color: #ff6b35 !important; font-weight: 500; }
+.token.string, .token.string-interpolation, .token.char { color: #9eff6e !important; }
+.token.comment { color: #5a5853 !important; font-style: italic; }
+.token.function { color: #ffd866 !important; }
+.token.number, .token.boolean, .token.constant { color: #5eead4 !important; }
+.token.punctuation, .token.operator { color: #a8a59c !important; background: transparent !important; }
+.token.class-name, .token.builtin, .token.namespace { color: #ffd866 !important; }
+.token.property, .token.symbol { color: #5eead4 !important; }
+.token.annotation, .token.attr-name { color: #ff6b35 !important; }
+.token.variable { color: #ece9e0 !important; }
+[data-theme="light"] .token.variable { color: #1a1815 !important; }
+
+/* Copy button + flash */
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 5px 11px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--fg-dim);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.copy-btn:hover {
+  background: rgba(255,107,53,0.12);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.copy-btn.copied {
+  background: var(--accent2) !important;
+  color: #0a0b0d !important;
+  border-color: var(--accent2) !important;
+  animation: flash 0.6s ease;
+}
+@keyframes flash {
+  0% { box-shadow: 0 0 0 0 rgba(94,234,212,0.6); }
+  50% { box-shadow: 0 0 0 10px rgba(94,234,212,0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(94,234,212,0); }
+}
+.copy-btn i { font-size: 11px; }
+
+/* Theme toggle (3-state) */
+.theme-toggle {
+  display: inline-flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  position: relative;
+}
+.theme-toggle button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--fg-dim);
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: color 0.2s;
+  font-size: 12px;
+}
+.theme-toggle button:hover { color: var(--fg); }
+.theme-toggle button.active { color: var(--accent); }
+.theme-toggle .slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,107,53,0.18);
+  border-radius: 50%;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+  z-index: 1;
+}
+
+/* Counter */
+.counter {
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+}
+.counter.tick { animation: tickPulse 0.6s ease; }
+@keyframes tickPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); color: var(--accent2) !important; }
+  100% { transform: scale(1); }
+}
+
+/* Repo cards */
+.repo-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.5s ease,
+              box-shadow 0.4s ease,
+              background-color 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+.repo-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(94,234,212,0.07), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.repo-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255,107,53,0.4);
+  box-shadow: var(--shadow);
+}
+.repo-card:hover::before { opacity: 1; }
+
+.lang-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dot-pattern {
+  background-image: radial-gradient(circle, var(--muted) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.18;
+}
+
+/* Tag colors */
+.tag-backend { background: rgba(255,107,53,0.15); color: var(--accent); }
+.tag-distributed { background: rgba(94,234,212,0.15); color: var(--accent2); }
+.tag-compilers { background: rgba(255,216,102,0.18); color: #ffd866; }
+.tag-databases { background: rgba(255,107,53,0.15); color: var(--accent); }
+.tag-runtime { background: rgba(94,234,212,0.15); color: var(--accent2); }
+.tag-testing { background: rgba(255,216,102,0.18); color: #ffd866; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  padding: 14px 20px;
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: var(--shadow-raise);
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 320px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast i { color: var(--accent); }
+
+.kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.theme-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, var(--accent), transparent 60%);
+  opacity: 0;
+  z-index: 9999;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 500;
+  padding: 12px 22px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.5s ease;
+  border: 1px solid var(--accent);
+  font-size: 14px;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -5px rgba(255,107,53,0.4);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--fg);
+  font-weight: 500;
+  padding: 12px 22px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  transition: all 0.2s, background-color 0.5s ease;
+  font-size: 14px;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+input[type="email"] {
+  transition: border-color 0.2s, background-color 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .glow-blob { animation: none !important; }
+}
+
+@media (max-width: 768px) {
+  .card:hover, .repo-card:hover { transform: translateY(-4px); }
+}
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Reading progress bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl" style="background: color-mix(in srgb, var(--bg) 75%, transparent); border-bottom: 1px solid var(--border);">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#" class="flex items-center gap-1 font-display font-bold text-lg tracking-tight">
+      <span class="text-[var(--accent)]">dev</span><span class="text-[var(--fg)]">.log</span><span class="cursor-blink">_</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-7 text-sm font-medium">
+      <a href="#articles" class="hover:text-[var(--accent)] transition-colors">Articles</a>
+      <a href="#snippets" class="hover:text-[var(--accent)] transition-colors">Snippets</a>
+      <a href="#projects" class="hover:text-[var(--accent)] transition-colors">Projects</a>
+      <a href="#about" class="hover:text-[var(--accent)] transition-colors">About</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="#projects" class="hidden sm:inline-flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)] transition-colors">
+        <i class="far fa-star text-[var(--accent)]"></i>
+        <span class="counter" data-target="9741" id="headerStars">0</span>
+      </a>
+      <div class="theme-toggle" id="themeToggle" role="radiogroup" aria-label="Color theme">
+        <div class="slider"></div>
+        <button data-mode="light" aria-label="Light theme" role="radio"><i class="fas fa-sun"></i></button>
+        <button data-mode="system" aria-label="System theme" role="radio"><i class="fas fa-desktop"></i></button>
+        <button data-mode="dark" aria-label="Dark theme" role="radio" class="active"><i class="fas fa-moon"></i></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="pt-20">
+
+<!-- Hero -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-grid"></div>
+  <div class="glow-blob" style="width: 500px; height: 500px; background-color: var(--accent); top: -150px; left: -150px;"></div>
+  <div class="glow-blob" style="width: 450px; height: 450px; background-color: var(--accent2); top: 100px; right: -150px; animation-delay: -10s;"></div>
+  
+  <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-28 grid md:grid-cols-5 gap-12 items-center">
+    <div class="md:col-span-3">
+      <div class="inline-flex items-center gap-2 text-xs font-mono text-[var(--fg-dim)] mb-7 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)]/80 backdrop-blur">
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent2)] pulse-dot" style="color: var(--accent2)"></span>
+        AVAILABLE FOR CONTRACTS · Q2 2025
+      </div>
+      <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] mb-6 tracking-tight" style="word-break: break-word;">
+        <span id="typewriter" class="text-[var(--accent)]"></span><span class="cursor"></span>
+      </h1>
+      <p class="text-lg text-[var(--fg-dim)] mb-8 max-w-md leading-relaxed">
+        I'm <span class="text-[var(--fg)] font-medium">Marcus Vale</span> — I write about distributed systems, the languages we build them in, and the bugs we ship with them.
+      </p>
+      <div class="flex flex-wrap gap-3 mb-12">
+        <a href="#articles" class="btn-primary">
+          Read latest <i class="fas fa-arrow-right text-sm"></i>
+        </a>
+        <a href="#snippets" class="btn-ghost">
+          <i class="fas fa-code text-sm"></i> Snippets
+        </a>
+      </div>
+      
+      <div class="flex flex-wrap gap-x-10 gap-y-4">
+        <div>
+          <div class="font-display text-3xl font-bold leading-none">142</div>
+          <div class="text-xs font-mono text-[var(--muted)] mt-1.5">articles</div>
+        </div>
+        <div>
+          <div class="font-display text-3xl font-bold leading-none text-[var(--accent)]">
+            <span class="counter" data-target="9741">0</span>
+          </div>
+          <div class="text-xs font-mono text-[var(--muted)] mt-1.5">github stars</div>
+        </div>
+        <div>
+          <div class="font-display text-3xl font-bold leading-none">11<span class="text-[var(--accent)]">y</span></div>
+          <div class="text-xs font-mono text-[var(--muted)] mt-1.5">shipping bugs</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="md:col-span-2 relative">
+      <div class="code-block shadow-2xl">
+        <div class="code-header">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full" style="background: #ff5f56;"></span>
+            <span class="w-3 h-3 rounded-full" style="background: #ffbd2e;"></span>
+            <span class="w-3 h-3 rounded-full" style="background: #27c93f;"></span>
+          </div>
+          <span class="font-mono text-xs text-[var(--muted)]">~/vale/devlog — zsh</span>
+          <span class="w-12"></span>
+        </div>
+        <pre class="!p-5 text-xs leading-relaxed"><code class="language-bash"># today's reading queue
+ $ curl -s devlog.io/feed.xml \
+  | jq '.articles[] | .title'
+
+"Why I stopped using ORMs"
+"A lexer in 200 lines of Rust"
+"Postgres LISTEN/NOTIFY"
+
+ $ make coffee &amp;&amp; read --all
+// TODO: ship the thing
+→ 3 articles queued. enjoy.</code></pre>
+      </div>
+      <div class="absolute -top-3 -right-3 bg-[var(--accent)] text-[var(--bg)] text-xs font-mono font-bold px-3 py-1.5 rounded-full shadow-lg">
+        NEW POST
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Articles -->
+<section id="articles" class="max-w-6xl mx-auto px-6 py-20">
+  <div class="flex items-end justify-between mb-12 flex-wrap gap-4 reveal">
+    <div>
+      <div class="kicker mb-2">— 01 / ARTICLES</div>
+      <h2 class="font-display text-4xl md:text-5xl font-bold tracking-tight">Latest dispatches</h2>
+    </div>
+    <a href="#" class="text-sm text-[var(--fg-dim)] hover:text-[var(--accent)] inline-flex items-center gap-1.5 transition-colors">
+      View archive <i class="fas fa-arrow-right text-xs"></i>
+    </a>
+  </div>
+  
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+    <article class="card">
+      <div class="flex items-center justify-between mb-4 text-xs">
+        <span class="px-2.5 py-1 rounded font-mono tag-backend">BACKEND</span>
+        <span class="text-[var(--muted)] font-mono">JAN 12</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold mb-3 leading-snug">Why I stopped using ORMs in production</h3>
+      <p class="text-sm text-[var(--fg-dim)] mb-6 leading-relaxed">After three years of N+1 queries and mysterious lock contention, I went back to raw SQL. Here's what changed.</p>
+      <div class="flex items-center justify-between text-xs text-[var(--muted)] font-mono pt-4 border-t border-[var(--border)]">
+        <span><i class="far fa-clock mr-1"></i> 8 MIN</span>
+        <span class="card-arrow">READ →</span>
+      </div>
+    </article>
+    
+    <article class="card">
+      <div class="flex items-center justify-between mb-4 text-xs">
+        <span class="px-2.5 py-1 rounded font-mono tag-distributed">DISTRIBUTED</span>
+        <span class="text-[var(--muted)] font-mono">JAN 05</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold mb-3 leading-snug">The 2am cost of microservices</h3>
+      <p class="text-sm text-[var(--fg-dim)] mb-6 leading-relaxed">A postmortem disguised as an essay. What we learned when the network partition hit at the worst possible moment.</p>
+      <div class="flex items-center justify-between text-xs text-[var(--muted)] font-mono pt-4 border-t border-[var(--border)]">
+        <span><i class="far fa-clock mr-1"></i> 12 MIN</span>
+        <span class="card-arrow">READ →</span>
+      </div>
+    </article>
+    
+    <article class="card">
+      <div class="flex items-center justify-between mb-4 text-xs">
+        <span class="px-2.5 py-1 rounded font-mono tag-compilers">COMPILERS</span>
+        <span class="text-[var(--muted)] font-mono">DEC 28</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold mb-3 leading-snug">A lexer in 200 lines of Rust</h3>
+      <p class="text-sm text-[var(--fg-dim)] mb-6 leading-relaxed">No dependencies, no macros, no wizardry. Just match arms and a peekable iterator. Fits on one screen.</p>
+      <div class="flex items-center justify-between text-xs text-[var(--muted)] font-mono pt-4 border-t border-[var(--border)]">
+        <span><i class="far fa-clock mr-1"></i> 15 MIN</span>
+        <span class="card-arrow">READ →</span>
+      </div>
+    </article>
+    
+    <article class="card">
+      <div class="flex items-center justify-between mb-4 text-xs">
+        <span class="px-2.5 py-1 rounded font-mono tag-databases">DATABASES</span>
+        <span class="text-[var(--muted)] font-mono">DEC 20</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold mb-3 leading-snug">Postgres LISTEN/NOTIFY: the queue you own</h3>
+      <p class="text-sm text-[var(--fg-dim)] mb-6 leading-relaxed">Before you reach for Redis or Kafka, the queue you already have might be enough. A practical guide with benchmarks.</p>
+      <div class="flex items-center justify-between text-xs text-[var(--muted)] font-mono pt-4 border-t border-[var(--border)]">
+        <span><i class="far fa-clock mr-1"></i> 9 MIN</span>
+        <span class="card-arrow">READ →</span>
+      </div>
+    </article>
+    
+    <article class="card">
+      <div class="flex items-center justify-between mb-4 text-xs">
+        <span class="px-2.5 py-1 rounded font-mono tag-runtime">RUNTIME</span>
+        <span class="text-[var(--muted)] font-mono">DEC 14</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold mb-3 leading-snug">Garbage collection isn't magic</h3>
+      <p class="text-sm text-[var(--fg-dim)] mb-6 leading-relaxed">A walk through three GC algorithms, with diagrams I drew on a napkin. Stop-the-world, concurrent, and the weird one.</p>
+      <div class="flex items-center justify-between text-xs text-[var(--muted)] font-mono pt-4 border-t border-[var(--border)]">
+        <span><i class="far fa-clock mr-1"></i> 11 MIN</span>
+        <span class="card-arrow">READ →</span>
+      </div>
+    </article>
+    
+    <article class="card">
+      <div class="flex items-center justify-between mb-4 text-xs">
+        <span class="px-2.5 py-1 rounded font-mono tag-testing">TESTING</span>
+        <span class="text-[var(--muted)] font-mono">DEC 08</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold mb-3 leading-snug">Stop writing slow tests</h3>
+      <p class="text-sm text-[var(--fg-dim)] mb-6 leading-relaxed">Your test suite takes 14 minutes because of three things. None of them are CI's fault. Here's the profiling playbook.</p>
+      <div class="flex items-center justify-between text-xs text-[var(--muted)] font-mono pt-4 border-t border-[var(--border)]">
+        <span><i class="far fa-clock mr-1"></i> 7 MIN</span>
+        <span class="card-arrow">READ →</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Snippets -->
+<section id="snippets" class="max-w-6xl mx-auto px-6 py-20">
+  <div class="mb-12 reveal">
+    <div class="kicker mb-2">— 02 / SNIPPETS</div>
+    <h2 class="font-display text-4xl md:text-5xl font-bold tracking-tight">Code I keep coming back to</h2>
+    <p class="text-[var(--fg-dim)] mt-3 max-w-2xl leading-relaxed">Small, sharp utilities I've written and rewritten enough times to memorize. Each one earned its place here by surviving at least one production incident.</p>
+  </div>
+  
+  <div class="grid lg:grid-cols-2 gap-6 reveal">
+    <div class="code-block">
+      <div class="code-header">
+        <div class="flex items-center gap-3">
+          <span class="text-[var(--accent)] text-xs"><i class="fas fa-code"></i></span>
+          <span class="font-mono text-xs text-[var(--fg-dim)]">lexer.rs</span>
+          <span class="text-xs text-[var(--muted)] font-mono">· Rust</span>
+        </div>
+        <button class="copy-btn" aria-label="Copy code to clipboard">
+          <i class="fas fa-copy"></i><span class="label">COPY</span>
+        </button>
+      </div>
+      <pre><code class="language-rust">pub fn tokenize(input: &amp;str) -&gt; Vec&lt;Token&gt; {
+    let mut tokens = Vec::new();
+    let mut chars = input.chars().peekable();
+    while let Some(&amp;c) = chars.peek() {
+        match c {
+            ' ' | '\n' =&gt; { chars.next(); }
+            'a'..='z' | 'A'..='Z' =&gt; {
+                let mut s = String::new();
+                while matches!(chars.peek(), Some(c) if c.is_alphanumeric()) {
+                    s.push(chars.next().unwrap());
+                }
+                tokens.push(Token::Ident(s));
+            }
+            '0'..='9' =&gt; {
+                let n: i64 = (&amp;mut chars)
+                    .take_while(|c| c.is_digit(10))
+                    .collect::&lt;String&gt;()
+                    .parse().unwrap();
+                tokens.push(Token::Num(n));
+            }
+            _ =&gt; { chars.next(); }
+        }
+    }
+    tokens
+}</code></pre>
+    </div>
+    
+    <div class="code-block">
+      <div class="code-header">
+        <div class="flex items-center gap-3">
+          <span class="text-[var(--accent)] text-xs"><i class="fas fa-code"></i></span>
+          <span class="font-mono text-xs text-[var(--fg-dim)]">merge.go</span>
+          <span class="text-xs text-[var(--muted)] font-mono">· Go</span>
+        </div>
+        <button class="copy-btn" aria-label="Copy code to clipboard">
+          <i class="fas fa-copy"></i><span class="label">COPY</span>
+        </button>
+      </div>
+      <pre><code class="language-go">func merge(cs ...&lt;-chan int) &lt;-chan int {
+    var wg sync.WaitGroup
+    out := make(chan int, len(cs))
+    
+    wg.Add(len(cs))
+    for _, c := range cs {
+        go func(c &lt;-chan int) {
+            defer wg.Done()
+            for v := range c {
+                out &lt;- v
+            }
+        }(c)
+    }
+    
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    
+    return out
+}</code></pre>
+    </div>
+    
+    <div class="code-block">
+      <div class="code-header">
+        <div class="flex items-center gap-3">
+          <span class="text-[var(--accent)] text-xs"><i class="fas fa-database"></i></span>
+          <span class="font-mono text-xs text-[var(--fg-dim)]">events.sql</span>
+          <span class="text-xs text-[var(--muted)] font-mono">· PostgreSQL</span>
+        </div>
+        <button class="copy-btn" aria-label="Copy code to clipboard">
+          <i class="fas fa-copy"></i><span class="label">COPY</span>
+        </button>
+      </div>
+      <pre><code class="language-sql">-- subscribe to the channel
+LISTEN order_events;
+
+-- emit a notification on every new order
+CREATE OR REPLACE FUNCTION notify_order()
+RETURNS TRIGGER AS $$ BEGIN
+    PERFORM pg_notify(
+        'order_events',
+        json_build_object(
+            'id', NEW.id,
+            'total', NEW.total
+        )::text
+    );
+    RETURN NEW;
+END;
+ $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_order_insert
+    AFTER INSERT ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_order();</code></pre>
+    </div>
+    
+    <div class="code-block">
+      <div class="code-header">
+        <div class="flex items-center gap-3">
+          <span class="text-[var(--accent)] text-xs"><i class="fas fa-stopwatch"></i></span>
+          <span class="font-mono text-xs text-[var(--fg-dim)]">timer.py</span>
+          <span class="text-xs text-[var(--muted)] font-mono">· Python</span>
+        </div>
+        <button class="copy-btn" aria-label="Copy code to clipboard">
+          <i class="fas fa-copy"></i><span class="label">COPY</span>
+        </button>
+      </div>
+      <pre><code class="language-python">import time
+from contextlib import contextmanager
+
+@contextmanager
+def measure(label: str):
+    """Print elapsed time for a block, in milliseconds."""
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        elapsed = (time.perf_counter() - start) * 1000
+        print(f"{label}: {elapsed:.2f}ms")
+
+# usage
+with measure("query"):
+    db.execute("SELECT * FROM orders WHERE total &gt; 100")
+# query: 42.17ms</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- GitHub projects -->
+<section id="projects" class="max-w-6xl mx-auto px-6 py-20">
+  <div class="flex items-end justify-between mb-12 flex-wrap gap-4 reveal">
+    <div>
+      <div class="kicker mb-2">— 03 / OPEN SOURCE</div>
+      <h2 class="font-display text-4xl md:text-5xl font-bold tracking-tight">Things on GitHub</h2>
+    </div>
+    <div class="flex items-center gap-2 text-xs font-mono text-[var(--fg-dim)]">
+      <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent2)] pulse-dot" style="color: var(--accent2)"></span>
+      LIVE COUNTERS · UPDATED EVERY FEW SECONDS
+    </div>
+  </div>
+  
+  <div class="grid md:grid-cols-2 gap-6 reveal">
+    <div class="repo-card">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="font-mono text-xs text-[var(--muted)] mb-1">vale /</div>
+          <h3 class="font-display text-xl font-semibold">distributed-cache</h3>
+        </div>
+        <i class="far fa-bookmark text-[var(--muted)] hover:text-[var(--accent)] cursor-pointer transition-colors"></i>
+      </div>
+      <p class="text-sm text-[var(--fg-dim)] mb-5 leading-relaxed">A sharded, eventually-consistent cache with optimistic concurrency. Survives 3-node partitions without dropping writes.</p>
+      <div class="flex items-center justify-between text-xs font-mono pt-4 border-t border-[var(--border)]">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <span class="lang-dot" style="background: #dea584;"></span> Rust
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="far fa-star"></i>
+            <span class="counter star-count" data-target="4847">0</span>
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="fas fa-code-branch"></i>
+            <span class="counter fork-count" data-target="312">0</span>
+          </span>
+        </div>
+        <a href="#" class="text-[var(--accent)] hover:underline">VIEW →</a>
+      </div>
+    </div>
+    
+    <div class="repo-card">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="font-mono text-xs text-[var(--muted)] mb-1">vale /</div>
+          <h3 class="font-display text-xl font-semibold">sql-parser</h3>
+        </div>
+        <i class="far fa-bookmark text-[var(--muted)] hover:text-[var(--accent)] cursor-pointer transition-colors"></i>
+      </div>
+      <p class="text-sm text-[var(--fg-dim)] mb-5 leading-relaxed">A recursive-descent SQL parser with zero-copy lexing. Supports PostgreSQL dialect plus window functions.</p>
+      <div class="flex items-center justify-between text-xs font-mono pt-4 border-t border-[var(--border)]">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <span class="lang-dot" style="background: #dea584;"></span> Rust
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="far fa-star"></i>
+            <span class="counter star-count" data-target="2193">0</span>
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="fas fa-code-branch"></i>
+            <span class="counter fork-count" data-target="184">0</span>
+          </span>
+        </div>
+        <a href="#" class="text-[var(--accent)] hover:underline">VIEW →</a>
+      </div>
+    </div>
+    
+    <div class="repo-card">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="font-mono text-xs text-[var(--muted)] mb-1">vale /</div>
+          <h3 class="font-display text-xl font-semibold">web-terminal</h3>
+        </div>
+        <i class="far fa-bookmark text-[var(--muted)] hover:text-[var(--accent)] cursor-pointer transition-colors"></i>
+      </div>
+      <p class="text-sm text-[var(--fg-dim)] mb-5 leading-relaxed">xterm-powered browser terminal with multiplexer support. Streams over WebSocket, persists sessions across reloads.</p>
+      <div class="flex items-center justify-between text-xs font-mono pt-4 border-t border-[var(--border)]">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <span class="lang-dot" style="background: #3178c6;"></span> TypeScript
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="far fa-star"></i>
+            <span class="counter star-count" data-target="1672">0</span>
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="fas fa-code-branch"></i>
+            <span class="counter fork-count" data-target="96">0</span>
+          </span>
+        </div>
+        <a href="#" class="text-[var(--accent)] hover:underline">VIEW →</a>
+      </div>
+    </div>
+    
+    <div class="repo-card">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="font-mono text-xs text-[var(--muted)] mb-1">vale /</div>
+          <h3 class="font-display text-xl font-semibold">fmt-rs</h3>
+        </div>
+        <i class="far fa-bookmark text-[var(--muted)] hover:text-[var(--accent)] cursor-pointer transition-colors"></i>
+      </div>
+      <p class="text-sm text-[var(--fg-dim)] mb-5 leading-relaxed">An opinionated code formatter that's 3× faster than prettier-rs. Configurable, deterministic, no surprises.</p>
+      <div class="flex items-center justify-between text-xs font-mono pt-4 border-t border-[var(--border)]">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <span class="lang-dot" style="background: #dea584;"></span> Rust
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="far fa-star"></i>
+            <span class="counter star-count" data-target="1029">0</span>
+          </span>
+          <span class="flex items-center gap-1.5 text-[var(--fg-dim)]">
+            <i class="fas fa-code-branch"></i>
+            <span class="counter fork-count" data-target="47">0</span>
+          </span>
+        </div>
+        <a href="#" class="text-[var(--accent)] hover:underline">VIEW →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="relative overflow-hidden border-y border-[var(--border)]" style="background: var(--bg-elev);">
+  <div class="absolute inset-0 dot-pattern"></div>
+  <div class="glow-blob" style="width: 400px; height: 400px; background-color: var(--accent); top: -100px; right: 10%;"></div>
+  <div class="relative max-w-3xl mx-auto px-6 py-20 text-center">
+    <div class="kicker mb-3">— 04 / STAY IN TOUCH</div>
+    <h2 class="font-display text-3xl md:text-5xl font-bold mb-4 tracking-tight">Get the next dispatch</h2>
+    <p class="text-[var(--fg-dim)] mb-8 max-w-lg mx-auto leading-relaxed">One email when I publish. No spam, no sales funnel, no growth hacking. Just the article, the day it ships.</p>
+    <form class="flex flex-wrap gap-3 max-w-md mx-auto" id="subscribeForm">
+      <input type="email" placeholder="you@domain.com" required class="flex-1 min-w-0 px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--accent)] font-mono text-sm" />
+      <button type="submit" class="btn-primary">Subscribe</button>
+    </form>
+    <div class="mt-6 text-xs font-mono text-[var(--muted)] flex items-center justify-center gap-1.5">
+      <span class="text-[var(--accent2)] pulse-dot inline-block w-1.5 h-1.5 rounded-full" style="color: var(--accent2)"></span>
+      2,841 readers · unsubscribe with one click
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="about" class="max-w-6xl mx-auto px-6 py-16">
+  <div class="grid md:grid-cols-4 gap-10 mb-12">
+    <div class="md:col-span-2">
+      <div class="font-display font-bold text-2xl mb-3 tracking-tight">
+        <span class="text-[var(--accent)]">dev</span>.log
+      </div>
+      <p class="text-sm text-[var(--fg-dim)] max-w-sm leading-relaxed mb-6">A programming notebook by Marcus Vale. Written in Neovim, deployed from a coffee shop, occasionally broken on purpose.</p>
+      <div class="flex items-center gap-3">
+        <a href="#" aria-label="GitHub" class="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"><i class="fab fa-github"></i></a>
+        <a href="#" aria-label="Twitter" class="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="RSS" class="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"><i class="fas fa-rss"></i></a>
+        <a href="#" aria-label="Email" class="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"><i class="far fa-envelope"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="kicker mb-4">TOPICS</div>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Distributed systems</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Compilers</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Databases</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Rust</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Postgres</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="kicker mb-4">ELSEWHERE</div>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">GitHub</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Twitter</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">RSS feed</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">Newsletter</a></li>
+        <li><a href="#" class="hover:text-[var(--accent)] transition-colors">PGP key</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pt-8 border-t border-[var(--border)] flex items-center justify-between flex-wrap gap-4 text-xs text-[var(--muted)] font-mono">
+    <div>© 2025 Marcus Vale · Built with caffeine and regret.</div>
+    <div class="flex items-center gap-2">
+      <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent2)] pulse-dot" style="color: var(--accent2)"></span>
+      ALL SYSTEMS OPERATIONAL
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <i class="fas fa-check-circle"></i>
+  <span id="toastMsg">Copied.</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+<script>
+// ===== Typewriter greeting =====
+const phrases = [
+  "Hello, World.",
+  "console.log('hi there');",
+  "while(alive) { ship(); }",
+  "git commit -m 'fix it'",
+  "// TODO: change everything"
+];
+
+class Typewriter {
+  constructor(el, phrases) {
+    this.el = el;
+    this.phrases = phrases;
+    this.idx = 0;
+    this.charIdx = 0;
+    this.deleting = false;
+    this.speed = 75;
+    this.deleteSpeed = 32;
+    this.pauseEnd = 1800;
+    this.pauseDelete = 380;
+    this.tick();
+  }
+  tick() {
+    const phrase = this.phrases[this.idx];
+    if (this.deleting) {
+      this.charIdx = Math.max(0, this.charIdx - 1);
+      this.el.textContent = phrase.slice(0, this.charIdx);
+      if (this.charIdx <= 0) {
+        this.deleting = false;
+        this.idx = (this.idx + 1) % this.phrases.length;
+        setTimeout(() => this.tick(), this.pauseDelete);
+        return;
+      }
+      setTimeout(() => this.tick(), this.deleteSpeed);
+    } else {
+      this.charIdx++;
+      this.el.textContent = phrase.slice(0, this.charIdx);
+      if (this.charIdx >= phrase.length) {
+        this.deleting = true;
+        setTimeout(() => this.tick(), this.pauseEnd);
+        return;
+      }
+      setTimeout(() => this.tick(), this.speed + Math.random() * 50);
+    }
+  }
+}
+const twEl = document.getElementById('typewriter');
+if (twEl) new Typewriter(twEl, phrases);
+
+// ===== Reading progress bar =====
+const progressBar = document.getElementById('progressBar');
+function updateProgress() {
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
+  progressBar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+window.addEventListener('scroll', updateProgress, { passive: true });
+window.addEventListener('resize', updateProgress);
+updateProgress();
+
+// ===== 3-state theme toggle (light / system / dark) =====
+const themeToggle = document.getElementById('themeToggle');
+const themeSlider = themeToggle.querySelector('.slider');
+const themeButtons = themeToggle.querySelectorAll('button');
+const modeOrder = ['light', 'system', 'dark'];
+
+function applyTheme(mode, withFlash = true) {
+  const actual = mode === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode;
+  document.documentElement.dataset.theme = actual;
+  document.documentElement.dataset.themeMode = mode;
+  try { localStorage.setItem('theme', mode); } catch(e) {}
+  
+  const idx = modeOrder.indexOf(mode);
+  themeSlider.style.transform = `translateX(${idx * 32}px)`;
+  themeButtons.forEach(b => {
+    const isActive = b.dataset.mode === mode;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-checked', isActive ? 'true' : 'false');
+  });
+  
+  if (withFlash) {
+    const flash = document.createElement('div');
+    flash.className = 'theme-flash';
+    flash.style.opacity = '0.22';
+    document.body.appendChild(flash);
+    requestAnimationFrame(() => { flash.style.opacity = '0'; });
+    setTimeout(() => flash.remove(), 700);
+  }
+}
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch(e) {}
+applyTheme(savedTheme, false);
+
+themeButtons.forEach(btn => {
+  btn.addEventListener('click', () => applyTheme(btn.dataset.mode));
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (document.documentElement.dataset.themeMode === 'system') {
+    applyTheme('system', false);
+  }
+});
+
+// ===== Copy-flash code buttons =====
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const block = btn.closest('.code-block');
+    const code = block.querySelector('code');
+    const text = code.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(_) {}
+      ta.remove();
+    }
+    btn.classList.add('copied');
+    const label = btn.querySelector('.label');
+    const icon = btn.querySelector('i');
+    const origLabel = label.textContent;
+    const origIcon = icon.className;
+    label.textContent = 'COPIED';
+    icon.className = 'fas fa-check';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      label.textContent = origLabel;
+      icon.className = origIcon;
+    }, 1800);
+    showToast('Snippet copied to clipboard.');
+  });
+});
+
+// ===== Count-up animation on reveal =====
+function animateCount(el, target, duration = 1800) {
+  const start = parseInt(el.textContent.replace(/,/g, '')) || 0;
+  el.dataset.animating = 'true';
+  const startTime = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const val = Math.floor(start + (target - start) * ease);
+    el.textContent = val.toLocaleString();
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else {
+      el.textContent = target.toLocaleString();
+      el.dataset.animating = 'false';
+      el.dataset.revealed = 'true';
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.dataset.target);
+      if (!el.dataset.revealed) animateCount(el, target);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+// ===== Live GitHub star/fork tickers =====
+function tickCounter(el) {
+  if (el.dataset.revealed !== 'true' || el.dataset.animating === 'true') return;
+  const cur = parseInt(el.textContent.replace(/,/g, '')) || 0;
+  const inc = Math.floor(Math.random() * 3) + 1;
+  el.textContent = (cur + inc).toLocaleString();
+  el.classList.add('tick');
+  setTimeout(() => el.classList.remove('tick'), 600);
+}
+
+setInterval(() => {
+  const starCounts = document.querySelectorAll('.star-count');
+  if (starCounts.length === 0) return;
+  const el = starCounts[Math.floor(Math.random() * starCounts.length)];
+  tickCounter(el);
+}, 4200);
+
+setInterval(() => {
+  const forkCounts = document.querySelectorAll('.fork-count');
+  if (forkCounts.length === 0) return;
+  const el = forkCounts[Math.floor(Math.random() * forkCounts.length)];
+  tickCounter(el);
+}, 6500);
+
+// ===== Card hover radial glow =====
+document.querySelectorAll('.card, .repo-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--mx', x + '%');
+    card.style.setProperty('--my', y + '%');
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.setProperty('--mx', '50%');
+    card.style.setProperty('--my', '0%');
+  });
+});
+
+// ===== Reveal on scroll =====
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ===== Toast =====
+const toast = document.getElementById('toast');
+const toastMsg = document.getElementById('toastMsg');
+let toastTimer;
+function showToast(msg) {
+  toastMsg.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+}
+
+// ===== Subscribe form =====
+document.getElementById('subscribeForm')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  showToast('Subscribed. Talk soon.');
+  e.target.reset();
+});
+
+// ===== Prism highlight on load =====
+function highlightAll() {
+  if (window.Prism) {
+    document.querySelectorAll('pre code').forEach(el => {
+      try { Prism.highlightElement(el); } catch(e) {}
+    });
+  }
+}
+window.addEventListener('DOMContentLoaded', highlightAll);
+setTimeout(highlightAll, 400); // safety in case components load late
+</script>
+
+</body>
+</html>
